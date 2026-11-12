@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 
 class RideRequest:
     count = 0
@@ -123,18 +124,41 @@ def ask_name():
         username = fname + " " + lname
     return username
 
+def load_cabs():
+    cabs = []
+    try:
+        with open("cabs.json") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        print("File Error: File not found")
+        return cabs
+    except json.JSONDecodeError:
+        print("JSON Error: Check for any misplaced commas in the file")
+        return cabs
+    
+    for i in data:
+        try:
+            if not isinstance(i["seats", int) or i["seats"] < 1 or i["seats"] > 4:
+                print(f"Cab entry with Driver - {i['driver']} has invalid number of seats. Entry Skipped")
+                continue
+            elif i["dest"] != "Delhi" and i["dest"] != "Jaipur":
+                print(f"Cab entry with Driver - {i['driver']} has invalid Destination. Entry Skipped")
+                continue
+            elif i["slot"] not in ["Morning", "Afternoon", "Evening", "Night"]:
+                print(f"Cab entry with Driver - {i['driver']} has invalid Time Slot. Entry Skipped")
+                continue
+            else:
+                cab = Cab(i["driver"], i["seats"], i["dest"], i["slot"])
+                cabs.append(cab)
+        except KeyError:
+            print(f"A cab entry had invalid input, so it was skipped. Check for any blank entries")
+            continue
+    return cabs
+
 print("Welcome to the BITS Pilani Cab Service!")
 opens = True
 waiting = []
-cabs = [
-    Cab("Ramesh", 4, "Delhi", "Morning"),
-    Cab("Suresh", 2, "Delhi", "Morning"),
-    Cab("Mahesh", 3, "Delhi", "Afternoon"),
-    Cab("Dinesh", 4, "Delhi", "Evening"),
-    Cab("Rajesh", 1, "Delhi", "Night"),
-    Cab("Sunil", 4, "Jaipur", "Morning"),
-    Cab("Anil", 3, "Jaipur", "Night")
-]
+cabs = load_cabs()
 
 while opens:
     try:
