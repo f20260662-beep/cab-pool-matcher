@@ -15,7 +15,20 @@ class RideRequest:
     
     def __str__(self):
         return f"#{self.counter} | Name: {self.name} | Destination: {self.dest} | Time Slot: {self.slot} | Year {self.year} | Requested at {self.timeshow}"
-        
+
+class Cab:
+    def __init__(self, driver, seats, dest, slot):
+        self.driver = driver
+        self.seats = seats
+        self.has_left = False
+        self.dest = dest
+        self.slot = slot
+        self.passengers = []
+    
+    def __str__(self):
+        left = "Yes" if self.has_left else "No"
+        return f"Driver: {self.driver} | Destination: {self.dest} | Time Slot: {self.slot} | Seats Taken: {len(self.passengers)}/{self.seats} | Has Left?: {left}"
+
 def ask_destination():
     check = True
     while check:
@@ -113,6 +126,15 @@ def ask_name():
 print("Welcome to the BITS Pilani Cab Service!")
 opens = True
 waiting = []
+cabs = [
+    Cab("Ramesh", 4, "Delhi", "Morning"),
+    Cab("Suresh", 2, "Delhi", "Morning"),
+    Cab("Mahesh", 3, "Delhi", "Afternoon"),
+    Cab("Dinesh", 4, "Delhi", "Evening"),
+    Cab("Rajesh", 1, "Delhi", "Night"),
+    Cab("Sunil", 4, "Jaipur", "Morning"),
+    Cab("Anil", 3, "Jaipur", "Night")
+]
 
 while opens:
     try:
@@ -151,11 +173,31 @@ Name: {user}''')
         waiting.append(user_details)
         
     elif option == 2:
+        print("-------------------------Cab Requests:----------------------------------\n")
         if not waiting:
             print("No cab requests for now!")
         else:
             for i in waiting:
                 print(str(i) + "\n")
+        print()
+        print("-----------------------Cabs Available:-----------------------------------\n")
+        avail = 0
+        for i in cabs:
+            if not i.has_left:
+                print(str(i) + "\n")
+                avail += 1
+        if avail == 0:
+            print("None yet!\n")
+            
+        print()
+        print("-------------------------Cabs Left:--------------------------------------\n")
+        left = 0
+        for i in cabs:
+            if i.has_left:
+                print(str(i) + "\n")
+                left += 1
+        if left == 0:
+            print("None yet!\n")
     else:
         print("Thank you for using our service!")
         break
@@ -171,3 +213,5 @@ Name: {user}''')
         else:
             repeat = False
             print("Thank you for using our service!")
+
+
