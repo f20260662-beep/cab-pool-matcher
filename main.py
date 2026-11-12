@@ -1,3 +1,21 @@
+from datetime import datetime
+
+class RideRequest:
+    count = 0
+    
+    def __init__(self, name, dest, slot, year):
+        self.name = name
+        self.dest = dest
+        self.slot = slot
+        self.year = year
+        time = datetime.now()
+        self.timeshow = time.strftime("%d-%m-%Y %H:%M:%S")
+        self.counter = RideRequest.count + 1
+        RideRequest.count += 1
+    
+    def __str__(self):
+        return f"#{self.counter} | Name: {self.name} | Destination: {self.dest} | Time Slot: {self.slot} | Year {self.year} | Requested at {self.timeshow}"
+        
 def ask_destination():
     check = True
     while check:
@@ -94,6 +112,7 @@ def ask_name():
 
 print("Welcome to the BITS Pilani Cab Service!")
 opens = True
+waiting = []
 
 while opens:
     try:
@@ -119,17 +138,24 @@ Choose the option you want to continue with (1, 2 or 3): '''))
         print()
         timeslot = ask_time_slot()
         print()
-        saal = ask_year()
+        year = ask_year()
         print()
         user = ask_name()
         print()
         print(f'''Your details have been saved successfully. Verify them below:
 Destination: {destination}
 Time: {timeslot}
-Year of Study: {saal}
+Year of Study: {year}
 Name: {user}''')
+        user_details = RideRequest(user, destination, timeslot, year)
+        waiting.append(user_details)
+        
     elif option == 2:
-        print("Work in Progress")
+        if not waiting:
+            print("No cab requests for now!")
+        else:
+            for i in waiting:
+                print(str(i) + "\n")
     else:
         print("Thank you for using our service!")
         break
