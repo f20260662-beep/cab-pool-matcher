@@ -138,7 +138,7 @@ def load_cabs():
     
     for i in data:
         try:
-            if not isinstance(i["seats", int) or i["seats"] < 1 or i["seats"] > 4:
+            if not isinstance(i["seats"], int) or i["seats"] < 1 or i["seats"] > 4:
                 print(f"Cab entry with Driver - {i['driver']} has invalid number of seats. Entry Skipped")
                 continue
             elif i["dest"] != "Delhi" and i["dest"] != "Jaipur":
@@ -151,10 +151,50 @@ def load_cabs():
                 cab = Cab(i["driver"], i["seats"], i["dest"], i["slot"])
                 cabs.append(cab)
         except KeyError:
-            print(f"A cab entry had invalid input, so it was skipped. Check for any blank entries")
+            print("A cab entry had invalid input, so it was skipped. Check for any blank entries")
             continue
     return cabs
 
+def find_matches(waiting, cabs):
+    claimed = set()
+    show = []
+    cab_open = False
+    
+    print("------------------------------- CABS AVAILABLE -----------------------------------")
+    print()
+    for i in cabs:
+        if not i.has_left:
+            show.append({i.driver: []})
+            cab_open = True
+            for j in waiting:
+                if len(show[len(show) - 1][i.driver]) < i.seats - len(i.passengers):
+                    if j.counter not in claimed:
+                        if i.dest == j.dest and i.slot == j.slot:
+                            show[len(show) - 1][i.driver].append(j)
+                            claimed.add(j.counter)
+            print("CAB DETAILS: " + str(i))
+            print()
+            if not show[len(show) - 1][i.driver]:
+                print("No student waiting for this trip.")
+            else:
+                print("This cab would take the Passengers:")
+                for ind, passenger in enumerate(show[len(show) - 1][i.driver], 1):
+                    print(f"{ind}. {passenger.name} - Year {passenger.year}")
+            print("------x------x------x------x------x------x------x------x------x------x------x")
+    if not cab_open:
+        print("No open cabs available right now")
+    
+    print("------------------------ USERS STILL AWAITING -------------------------------")
+    print()
+    awaiting = False
+    for i in waiting:
+        if i.counter not in claimed:
+            print(str(i))
+            print()
+            awaiting = True
+    if not awaiting:
+        print("No students awaiting")
+    
 print("Welcome to the BITS Pilani Cab Service!")
 opens = True
 waiting = []
@@ -166,16 +206,17 @@ while opens:
 -------------------------MENU----------------------------
 1) Add a new cab request
 2) View all cab requests
-3) Quit the application
+3) Find Matches
+4) Quit the application
 
-Choose the option you want to continue with (1, 2 or 3): '''))
-        if option < 1 or option > 3:
-            print("Choose only from 1, 2 or 3, according to the menu")
+Choose the option you want to continue with (1, 2, 3 or 4): '''))
+        if option < 1 or option > 4:
+            print("Choose only from 1, 2, 3 or 4, according to the menu")
             continue
         else:
             opens = False
     except ValueError:
-        print("Choose only from 1, 2 or 3, according to the menu")
+        print("Choose only from 1, 2, 3 or 4, according to the menu")
         continue
     
     if option == 1:
@@ -222,6 +263,9 @@ Name: {user}''')
                 left += 1
         if left == 0:
             print("None yet!\n")
+    
+    elif option == 3:
+        find_matches(waiting, cabs) 
     else:
         print("Thank you for using our service!")
         break
