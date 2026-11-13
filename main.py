@@ -160,7 +160,7 @@ def find_matches(waiting, cabs):
     show = []
     cab_open = False
     
-    print("------------------------------- CABS AVAILABLE -----------------------------------")
+    print(banner("CAB REQUESTS"))
     print()
     for i in cabs:
         if not i.has_left:
@@ -180,11 +180,11 @@ def find_matches(waiting, cabs):
                 print("This cab would take the Passengers:")
                 for ind, passenger in enumerate(show[len(show) - 1][i.driver], 1):
                     print(f"{ind}. {passenger.name} - Year {passenger.year}")
-            print("------x------x------x------x------x------x------x------x------x------x------x")
+            print("----------x" * int((WIDTH/11)))
     if not cab_open:
         print("No open cabs available right now")
     
-    print("------------------------ USERS STILL AWAITING -------------------------------")
+    print(banner("USERS STILL AWAITING"))
     print()
     awaiting = False
     for i in waiting:
@@ -194,6 +194,11 @@ def find_matches(waiting, cabs):
             awaiting = True
     if not awaiting:
         print("No students awaiting")
+
+WIDTH = 110
+
+def banner(title):
+    return f" {title} ".center(WIDTH, "-")
     
 print("Welcome to the BITS Pilani Cab Service!")
 opens = True
@@ -202,13 +207,13 @@ cabs = load_cabs()
 
 while opens:
     try:
-        option = int(input('''
--------------------------MENU----------------------------
+        option = int(input(f'''
+{banner("MENU")}
 1) Add a new cab request
 2) View all cab requests
 3) Find Matches
 4) Quit the application
-
+   
 Choose the option you want to continue with (1, 2, 3 or 4): '''))
         if option < 1 or option > 4:
             print("Choose only from 1, 2, 3 or 4, according to the menu")
@@ -238,14 +243,14 @@ Name: {user}''')
         waiting.append(user_details)
         
     elif option == 2:
-        print("-------------------------Cab Requests:----------------------------------\n")
+        print(banner("CAB REQUESTS") + "\n")
         if not waiting:
             print("No cab requests for now!")
         else:
             for i in waiting:
                 print(str(i) + "\n")
         print()
-        print("-----------------------Cabs Available:-----------------------------------\n")
+        print(banner("CAB AVAILABLE") + "\n")
         avail = 0
         for i in cabs:
             if not i.has_left:
@@ -255,7 +260,7 @@ Name: {user}''')
             print("None yet!\n")
             
         print()
-        print("-------------------------Cabs Left:--------------------------------------\n")
+        print(banner("CAB LEFT") + "\n")
         left = 0
         for i in cabs:
             if i.has_left:
