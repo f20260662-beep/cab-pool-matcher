@@ -202,6 +202,32 @@ def find_matches(waiting, cabs):
             awaiting = True
     if not awaiting:
         print("No students awaiting")
+
+def dispatch_cab(waiting, cabs):
+    print("You will now be dispatching a cab matching the Destination and Time Slot you enter.\n")
+    dest = ask_destination()
+    slot = ask_time_slot()
+    cab_found = False
+    for cab in cabs:
+        if dest == cab.dest and slot == cab.slot and not cab.has_left:
+            cab_found = True
+            chosen = pick_students(cab, waiting, set())
+            if not chosen:
+                print(f"For cab with Driver: {cab.driver}, no students have applied")
+                return
+            else:
+                for i in chosen:
+                    cab.passengers.append(i)
+                    waiting.remove(i)
+                print(f"""Cab with details: {str(cab)}
+left with the students:""")
+                for i in cab.passengers:
+                    print(f"{i.name} - Year {i.year}")
+                cab.has_left = True
+                return
+        
+    if not cab_found:
+        print("No cab found for the following filters.")
     
 print("Welcome to the BITS Pilani Cab Service!")
 opens = True
@@ -215,16 +241,17 @@ while opens:
 1) Add a new cab request
 2) View all cab requests
 3) Find Matches
-4) Quit the application
+4) Dispatch Cab
+5) Quit the application
    
-Choose the option you want to continue with (1, 2, 3 or 4): '''))
-        if option < 1 or option > 4:
-            print("Choose only from 1, 2, 3 or 4, according to the menu")
+Choose the option you want to continue with (1, 2, 3, 4 or 5): '''))
+        if option < 1 or option > 5:
+            print("Choose only from 1, 2, 3, 4 or 5, according to the menu")
             continue
         else:
             opens = False
     except ValueError:
-        print("Choose only from 1, 2, 3 or 4, according to the menu")
+        print("Choose only from 1, 2, 3, 4 or 5, according to the menu")
         continue
     
     if option == 1:
@@ -273,7 +300,11 @@ Name: {user}''')
             print("None yet!\n")
     
     elif option == 3:
-        find_matches(waiting, cabs) 
+        find_matches(waiting, cabs)
+    
+    elif option == 4:
+        dispatch_cab(waiting, cabs)
+        
     else:
         print("Thank you for using our service!")
         break
