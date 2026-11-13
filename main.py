@@ -1,6 +1,11 @@
 from datetime import datetime
 import json
 
+WIDTH = 110
+
+def banner(title):
+    return f" {title} ".center(WIDTH, "-")
+
 class RideRequest:
     count = 0
     
@@ -155,50 +160,48 @@ def load_cabs():
             continue
     return cabs
 
+def pick_students(cab, waiting, claimed):
+    free = cab.seats - len(cab.passengers)
+    chosen = []
+    for request in waiting:
+        if len(chosen) < free and request.counter not in claimed and request.dest == cab.dest and request.slot == cab.slot:
+            chosen.append(request)
+    return chosen
+
 def find_matches(waiting, cabs):
     claimed = set()
-    show = []
     cab_open = False
-    
-    print(banner("CAB REQUESTS"))
+
+    print(banner("MATCH PREVIEW"))
     print()
-    for i in cabs:
-        if not i.has_left:
-            show.append({i.driver: []})
+    for cab in cabs:
+        if not cab.has_left:
             cab_open = True
-            for j in waiting:
-                if len(show[len(show) - 1][i.driver]) < i.seats - len(i.passengers):
-                    if j.counter not in claimed:
-                        if i.dest == j.dest and i.slot == j.slot:
-                            show[len(show) - 1][i.driver].append(j)
-                            claimed.add(j.counter)
-            print("CAB DETAILS: " + str(i))
+            chosen = pick_students(cab, waiting, claimed)
+            for request in chosen:
+                claimed.add(request.counter)
+            print("CAB DETAILS: " + str(cab))
             print()
-            if not show[len(show) - 1][i.driver]:
+            if not chosen:
                 print("No student waiting for this trip.")
             else:
                 print("This cab would take the Passengers:")
-                for ind, passenger in enumerate(show[len(show) - 1][i.driver], 1):
+                for ind, passenger in enumerate(chosen, 1):
                     print(f"{ind}. {passenger.name} - Year {passenger.year}")
-            print("----------x" * int((WIDTH/11)))
+            print("----------x" * int(WIDTH / 11))
     if not cab_open:
         print("No open cabs available right now")
-    
+
     print(banner("USERS STILL AWAITING"))
     print()
     awaiting = False
-    for i in waiting:
-        if i.counter not in claimed:
-            print(str(i))
+    for request in waiting:
+        if request.counter not in claimed:
+            print(str(request))
             print()
             awaiting = True
     if not awaiting:
         print("No students awaiting")
-
-WIDTH = 110
-
-def banner(title):
-    return f" {title} ".center(WIDTH, "-")
     
 print("Welcome to the BITS Pilani Cab Service!")
 opens = True
@@ -250,7 +253,7 @@ Name: {user}''')
             for i in waiting:
                 print(str(i) + "\n")
         print()
-        print(banner("CAB AVAILABLE") + "\n")
+        print(banner("CABS AVAILABLE") + "\n")
         avail = 0
         for i in cabs:
             if not i.has_left:
@@ -260,7 +263,7 @@ Name: {user}''')
             print("None yet!\n")
             
         print()
-        print(banner("CAB LEFT") + "\n")
+        print(banner("CABS LEFT") + "\n")
         left = 0
         for i in cabs:
             if i.has_left:
