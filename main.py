@@ -1,7 +1,12 @@
 from datetime import datetime
 import json
+import heapq
 
 WIDTH = 110
+queue = {}
+for i in ["Delhi", "Jaipur"]:
+    for j in ["Morning", "Afternoon", "Evening", "Night"]:
+        queue[(i, j)] = []
 
 def banner(title):
     return f" {title} ".center(WIDTH, "-")
@@ -160,16 +165,17 @@ def load_cabs():
             continue
     return cabs
 
-def pick_students(cab, waiting, claimed):
+def pick_students(cab, queue):
     free = cab.seats - len(cab.passengers)
     chosen = []
-    for request in waiting:
-        if len(chosen) < free and request.counter not in claimed and request.dest == cab.dest and request.slot == cab.slot:
-            chosen.append(request)
+    while queue[(cab.dest, cab.slot)] and len(chosen) < free:
+        chosen.append(heapq.heappop(queue[(cab.dest, cab.slot)])[2])
     return chosen
 
 def find_matches(waiting, cabs):
-    claimed = set()
+    preview = {}
+    for i, j in queue.items():
+        preview[i] = j
     cab_open = False
 
     print(banner("MATCH PREVIEW"))
@@ -177,7 +183,7 @@ def find_matches(waiting, cabs):
     for cab in cabs:
         if not cab.has_left:
             cab_open = True
-            chosen = pick_students(cab, waiting, claimed)
+            chosen = pick_students(cab, preview)
             for request in chosen:
                 claimed.add(request.counter)
             print("CAB DETAILS: " + str(cab))
@@ -195,15 +201,22 @@ def find_matches(waiting, cabs):
     print(banner("USERS STILL AWAITING"))
     print()
     awaiting = False
-    for request in waiting:
-        if request.counter not in claimed:
-            print(str(request))
-            print()
-            awaiting = True
+    for request in all_waiting(preview):
+        print(str(request))
+        print()
+        awaiting = True
     if not awaiting:
         print("No students awaiting")
 
-def dispatch_cab(waiting, cabs):
+def all_waiting(queue):
+    pairs = []
+    for heap in queue.values():
+        for entry in heap:
+            pairs.append((entry[1], entry[2]))
+    pairs.sort()
+    return [request for counter, request in pairs]
+
+def dispatch_cab(queue, cabs):
     print("You will now be dispatching a cab matching the Destination and Time Slot you enter.\n")
     dest = ask_destination()
     slot = ask_time_slot()
@@ -211,14 +224,13 @@ def dispatch_cab(waiting, cabs):
     for cab in cabs:
         if dest == cab.dest and slot == cab.slot and not cab.has_left:
             cab_found = True
-            chosen = pick_students(cab, waiting, set())
+            chosen = pick_students(cab, queue)
             if not chosen:
                 print(f"For cab with Driver: {cab.driver}, no students have applied")
                 return
             else:
                 for i in chosen:
                     cab.passengers.append(i)
-                    waiting.remove(i)
                 print(f"""Cab with details: {str(cab)}
 left with the students:""")
                 for i in cab.passengers:
@@ -231,7 +243,6 @@ left with the students:""")
     
 print("Welcome to the BITS Pilani Cab Service!")
 opens = True
-waiting = []
 cabs = load_cabs()
 
 while opens:
@@ -270,9 +281,10 @@ Time: {timeslot}
 Year of Study: {year}
 Name: {user}''')
         user_details = RideRequest(user, destination, timeslot, year)
-        waiting.append(user_details)
+        heapq.heappush(queue[(user_details.dest, user_details.slot)], (-user_details.year, user_details.counter, user_details))
         
     elif option == 2:
+        waiting = all_waiting(queue)
         print(banner("CAB REQUESTS") + "\n")
         if not waiting:
             print("No cab requests for now!")
@@ -300,10 +312,10 @@ Name: {user}''')
             print("None yet!\n")
     
     elif option == 3:
-        find_matches(waiting, cabs)
+        find_matches(queue, cabs)
     
     elif option == 4:
-        dispatch_cab(waiting, cabs)
+        dispatch_cab(queue, cabs)
         
     else:
         print("Thank you for using our service!")
